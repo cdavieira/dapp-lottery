@@ -40,8 +40,8 @@ contract LotteryFactory {
         for (uint256 i = 0; i < count; i++) {
             Lottery lottery = Lottery(payable(lotteries[i]));
             addresses[i] = lotteries[i];
-            maxPlayersList[i] = lottery.maxPlayers();
-            entryFees[i] = lottery.entryFee();
+            maxPlayersList[i] = lottery.getMaxPlayers();
+            entryFees[i] = lottery.getEntryFee();
             playerCounts[i] = lottery.playerCount();
             creators[i] = lotteryCreators[lotteries[i]];
         }

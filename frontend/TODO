@@ -1,0 +1,14 @@
+atualmente o metamask precisa ter o endereço/a conta de todo o usuario que
+quiser criar uma nova loteria/entrar em uma loteria
+
+talvez mostrar na pagina o endereço do usuario atualmente logado
+
+usar try e catch para pegar possiveis erros decorrentes dos requires/modifiers
+do contrato
+
+pensar numa forma de instanciar todos os contratos de loteria no javascript em
+uma tacada unica e depois passar isso para o componente de grid
+
+melhorar css (list-like lotteries)
+
+testar os event listeners do factory e do contrato

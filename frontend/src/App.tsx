@@ -5,7 +5,8 @@ import factoryABI from './LotteryFactory.json';
 import lotteryABI from './Lottery.json';
 import './App.css'
 
-const contractAddr = '0xfa656FA514b9087B55f70e8FDa65085A12f318F9';
+// const factoryAddr = '0xfa656FA514b9087B55f70e8FDa65085A12f318F9';
+const factoryAddr = '0x41604169696E57E7351CEDa7977A4Bb9A6C80FA2';
 
 function TextInput(props: {
   id: string,
@@ -44,9 +45,9 @@ function CreateLotteryBtn(props: { submitHandler: (text: Array<string>) => void 
   const [minFee, setMinFee] = useState('');
   const [ownerAddr, setOwnerAddr] = useState('');
   const texts: Array<CreateLotteryBtnItem> = [
-    {value: maxPlayers, setter: setMaxPlayers, label: 'maxPlayers', placeholder: '10'},
-    {value: minFee, setter: setMinFee, label: 'minFee', placeholder: '100000000000000000 wei'},
-    {value: ownerAddr, setter: setOwnerAddr, label: 'ownerAddress', placeholder: '0x106808f0C3F7241Bae984285699A6eD2348C5530'}
+    {value: maxPlayers, setter: setMaxPlayers, label: 'Max players', placeholder: '10'},
+    {value: minFee, setter: setMinFee, label: 'Min fee', placeholder: '100000000000000000'},
+    {value: ownerAddr, setter: setOwnerAddr, label: 'Owner address', placeholder: '0x0'}
   ];
 
   function submitHandlerWrapper(e){
@@ -72,7 +73,7 @@ function CreateLotteryBtn(props: { submitHandler: (text: Array<string>) => void 
   return (
     <form onSubmit={submitHandlerWrapper}>
       {textInputs}
-      <button type="submit"> Criar loteria </button>
+      <button type="submit"> Create lottery </button>
     </form>
   )
 }
@@ -90,7 +91,11 @@ function LotteryGrid(props: {lotteries: Array<LotteryData>}){
   const lotteryDivs = props.lotteries.map((data) => {
     return (
       <div key={data.address} className={'lottery-card'}>
-	<p>{`Lottery at ${data.address}, ${data.playerCount}/${data.maxPlayers} players, ${data.entryFee} ETH`}</p>
+	<p>{`At address: ${data.address}`}</p>
+	<p>{`Players: ${data.playerCount}/${data.maxPlayers}`}</p>
+	<p>{`Fee: ${data.entryFee} ETH`}</p>
+	<p>{`ETH Balance: ${data.ethBalance} ETH`}</p>
+	<p>{`Link Balance: ${data.linkBalance} LINK`}</p>
 	<button onClick={() => EnterLottery(data.contract)}>Enter lottery</button>
 	<button onClick={() => CloseLottery(data.contract)}>Close lottery</button>
       </div>
@@ -120,6 +125,9 @@ type LotteryData = {
   playerCount: BigInt
   maxPlayers: BigInt
   entryFee: BigInt //ETH
+  open: boolean
+  ethBalance: BigInt
+  linkBalance: BigInt
 };
 
 function App() {
@@ -131,23 +139,50 @@ function App() {
   async function chooseProvider(provider: EIP1193Provider){
     const webprovider = new ethers.BrowserProvider(provider);
     //creating readonly instance of the factory contract, only 'pure' and 'view' methods can be called
-    const factory = new ethers.Contract(contractAddr, factoryABI.abi, webprovider);
+    const factory = new ethers.Contract(factoryAddr, factoryABI.abi, webprovider);
     const details: LotteriesDetails = await factory.getLotteriesDetails();
     const preLotteries = Array(details[0].length).fill(null);
 
+    let contract: ethers.Contract;
+    let signer: ethers.JsonRpcSigner;
+    let address: string;
+    let creatorAddr: string;
     for(let i=0; i<preLotteries.length; i++){
+      address = details[0][i];
+      creatorAddr = details[4][i];
+      signer = await webprovider.getSigner(creatorAddr);
+      contract = new ethers.Contract(address, lotteryABI.abi, signer);
       preLotteries[i] = {
-	contract: new ethers.Contract(details[0][i], lotteryABI.abi, await webprovider.getSigner(details[4][i])),
-	address: details[0][i],
+	contract: contract,
+	address: address,
 	maxPlayers: details[1][i],
 	entryFee: details[2][i],
 	playerCount: details[3][i],
-	creator: details[4][i],
+	creator: creatorAddr,
+	open: await contract.isActive(),
+	ethBalance: await contract.getBalance(),
+	linkBalance: await contract.getLinkBalance(),
       };
+      contract.on(
+	'PlayerEntered',
+	(playerAddr, playerCount) => {
+	  console.log(`New player ${playerAddr} entered in lottery ${preLotteries[i].address}`);
+	  console.log('Reload the page to see this');
+	  preLotteries[i].playerCount = playerCount;
+	}
+      );
+      contract.on(
+	'LotteryClosed',
+	(chosenNumber, winnerAddr) => {
+	  console.log(`Lottery ${preLotteries[i].address} has been closed`);
+	  console.log('Reload the page to see this');
+	  preLotteries[i].open = false;
+	}
+      );
     }
 
     //TODO
-    console.log('Lotteries pre loaded: ', preLotteries);
+    // console.log('Lotteries pre loaded: ', preLotteries);
 
     setProvider(webprovider);
     setLotteries(preLotteries);
@@ -170,7 +205,7 @@ function App() {
       return null;
     }
     const signer = await provider.getSigner(_signerAddr);
-    const factory = new ethers.Contract(contractAddr, factoryABI.abi, signer);
+    const factory = new ethers.Contract(factoryAddr, factoryABI.abi, signer);
     factory.on(
       'LotteryCreated',
       (creator, addr, maxplayers, fee) => createLotteryListener(creator, addr, maxplayers, fee)
@@ -186,13 +221,17 @@ function App() {
 
       const lotteriesCopy = lotteries.slice();
       const signer = await provider.getSigner(creatorAddr);
+      const contract = new ethers.Contract(lotteryAddr, lotteryABI.abi, signer);
       const data: LotteryData = {
-	contract: new ethers.Contract(lotteryAddr, lotteryABI.abi, signer),
+	contract: contract,
 	creator: creatorAddr,
 	address: lotteryAddr,
 	playerCount: 0n,
 	maxPlayers: maxPlayers,
-	entryFee: entryFee
+	entryFee: entryFee,
+	open: await contract.isActive(),
+	ethBalance: await contract.getBalance(),
+	linkBalance: await contract.getLinkBalance(),
       };
 
       //TODO

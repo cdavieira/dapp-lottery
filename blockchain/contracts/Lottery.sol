@@ -24,12 +24,11 @@ contract Lottery is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
 	mapping(uint256 => RequestStatus) public reqStatus; // requestId --> requestStatus
 	event RequestSent(uint256 requestId, uint32 numWords);
 	event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
-	event RandomNumberHandled(uint256);
 	event Received(address, uint256);
 
 	//Lottery data
-	uint256 public maxPlayers;
-	uint256 public entryFee;
+	uint256 private immutable maxPlayers;
+	uint256 private immutable entryFee;
 	uint256 public playerCount;
 	address payable[] public players;
 	bool public isActive;
@@ -116,6 +115,7 @@ contract Lottery is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
 		// require(contractBalance > 0, "No LINK to transfer!");
 		// require(IERC20(linkAddress).transfer(winner, contractBalance), "LINK transfer failed!");
 
+		isActive = false;
 		emit LotteryClosed(_randomWords[0], winner);
 	}
 
@@ -133,7 +133,6 @@ contract Lottery is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
 		return (request.paid, request.fulfilled, request.randomWords);
 	}
 
-	// Allow withdraw of Link tokens from the contract
 	function withdrawLink() public onlyOwner {
 		LinkTokenInterface link = LinkTokenInterface(linkAddress);
 		require(
@@ -142,7 +141,6 @@ contract Lottery is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
 		);
 	}
 
-	/// @param amount the amount to withdraw, in wei
 	function withdrawNative(uint256 amount) external onlyOwner {
 		(bool success, ) = payable(owner()).call{value: amount}("");
 		require(success, "withdrawNative failed");
@@ -178,7 +176,15 @@ contract Lottery is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
 		emit PlayerEntered(msg.sender, playerCount);
 	}
 
-	function toggleOnOff() public {
-		isActive = !isActive;
+	function getMaxPlayers() public view returns (uint256) {
+		return maxPlayers;
 	}
+
+	function getEntryFee() public view returns (uint256) {
+		return entryFee;
+	}
+
+	// function toggleOnOff() public {
+	// 	isActive = !isActive;
+	// }
 }
