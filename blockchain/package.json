@@ -1,0 +1,22 @@
+{
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-ignition": "^0.15.9",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.9",
+    "@nomicfoundation/hardhat-verify": "^2.0.12",
+    "@nomicfoundation/ignition-core": "^0.15.9",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.18"
+  },
+  "scripts": {
+    "clean": "rm -rf ./ignition/deployments/*",
+    "compile": "yarn exec hardhat compile && cp artifacts/contracts/Lottery.sol/Lottery.json ../frontend/src && cp artifacts/contracts/LotteryFactory.sol/LotteryFactory.json ../frontend/src ",
+    "node": "yarn exec hardhat node",
+    "deploy": "yarn exec hardhat ignition deploy ./ignition/modules/deploy.js"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^1.3.0",
+    "@openzeppelin/contracts": "^5.2.0"
+  }
+}
