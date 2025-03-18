@@ -80,16 +80,31 @@ function CreateLotteryBtn(props: { submitHandler: (text: Array<string>) => void 
 
 function LotteryGrid(props: {lotteries: Array<LotteryData>}){
 	async function EnterLottery(contract: ethers.Contract, fee: BigInt){
-		await contract.enter({
-			// value: ethers.parseEther("0.01")
-			value: fee,
-		});
+		try{
+			const tx = await contract.enter({
+				// value: ethers.parseEther("0.01")
+				value: fee,
+			});
+			await tx.wait();
+		}
+		catch(err: any){
+			console.error(err);
+		}
 	}
 
 	async function CloseLottery(contract: ethers.Contract){
-		await contract.requestRandomWords(true, {
-			gasLimit: ethers.parseUnits("3000000", "wei")  
-		});
+		try{
+			const tx = await contract.requestRandomWords(true, {
+				gasLimit: ethers.parseUnits("3000000", "wei")
+			});
+			await tx.wait();
+		}
+		catch(err: any){
+			if(err.receipt.from != (await contract.owner())){
+				console.log("You are not the owner");
+			}
+			console.error(err);
+		}
 	}
 
 	const activeLotteries = props.lotteries.filter((lottery) => lottery.open === true);
@@ -97,10 +112,11 @@ function LotteryGrid(props: {lotteries: Array<LotteryData>}){
 		return (
 			<div key={data.address} className={'lottery-card'}>
 			<p>{`At address: ${data.address}`}</p>
+			<p>{`Creator: ${data.creator}`}</p>
 			<p>{`Players: ${data.playerCount}/${data.maxPlayers}`}</p>
 			<p>{`Fee: ${data.entryFee} Wei`}</p>
-			<p>{`ETH Balance: ${data.ethBalance} Wei`}</p>
-			<p>{`Link Balance: ${data.linkBalance} LINK`}</p>
+			// <p>{`ETH Balance: ${data.ethBalance} Wei`}</p>
+			// <p>{`Link Balance: ${data.linkBalance} LINK`}</p>
 			<button onClick={() => EnterLottery(data.contract, data.entryFee)}>Enter lottery</button>
 			<button onClick={() => CloseLottery(data.contract)}>Close lottery</button>
 			</div>
@@ -159,6 +175,7 @@ function App() {
 			creatorAddr = details[4][i];
 			contract = searchContract(contractAddr);
 			if(contract === undefined){
+				console.log("Prefetch: creating", contractAddr);
 				signer = await webprovider.getSigner();
 				contract = new ethers.Contract(contractAddr, lotteryABI.abi, signer);
 				contract.on(
@@ -195,7 +212,6 @@ function App() {
 					}
 				)
 				contractsCache.current.push({address: contractAddr, contract: contract});
-				console.log(contractAddr);
 			}
 			preLotteries[i] = {
 				contract: contract,
@@ -247,6 +263,7 @@ function App() {
 
 		let contract = searchContract(lotteryAddr);
 		if(contract === undefined){
+			console.log("Creation: creating", lotteryAddr);
 			const signer = await provider.getSigner(creatorAddr);
 			contract = new ethers.Contract(lotteryAddr, lotteryABI.abi, signer);
 			contract.on(
