@@ -1,14 +1,27 @@
-atualmente o metamask precisa ter o endereço/a conta de todo o usuario que
-quiser criar uma nova loteria/entrar em uma loteria
-
-talvez mostrar na pagina o endereço do usuario atualmente logado
-
-usar try e catch para pegar possiveis erros decorrentes dos requires/modifiers
+## TODO
+* [ ] Deployar site usando vercel
+* [ ] Fazer testes
+* [ ] Usar try e catch para pegar possiveis erros decorrentes dos requires/modifiers
 do contrato
 
-pensar numa forma de instanciar todos os contratos de loteria no javascript em
-uma tacada unica e depois passar isso para o componente de grid
 
-melhorar css (list-like lotteries)
+## SKIPPED
+* [ ] Estimar gas limit e fazer um console log dessa informação (skippado)
+* [ ] Organizar o código em moduloa (skippado)
+* [ ] Mostrar na pagina o endereço do usuario atualmente logado
+* [ ] Adicionar horario de criação da loteria
+* [ ] Adicionar loading enquanto o dapp carrega as informações das loterias já criadas
 
-testar os event listeners do factory e do contrato
+
+## DONE
+* [X] Melhorar css (list-like lotteries)
+* [X] Corrigir: o app solicita acesso do metamask da pessoa que criou o contrato em vez de quem está atualmente conectado
+* [X] Corrigir gas/value necessário para executar a função de entrar em uma loteria
+* [X] Atualizar o número de jogadores e saldo de uma loteria quando um novo usuário entrar
+* [X] Mudar ETH para WEI na taxa das loterias
+* [X] Investigar problema dos listeners
+* [X] Definir gas limit personalizado da função de fechar a loteria
+* [X] Filtrar loterias fechadas da lista de loterias ativas
+* [X] Instanciar todos os contratos de loteria no javascript em uma tacada
+unica e depois passar isso para o componente de grid
+* [X] Testar os event listeners do factory e do contrato
