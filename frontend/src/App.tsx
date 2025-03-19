@@ -107,6 +107,8 @@ function LotteryGrid(props: {lotteries: Array<LotteryData>}){
 		}
 	}
 
+	// <p>{`ETH Balance: ${data.ethBalance} Wei`}</p>
+	// <p>{`Link Balance: ${data.linkBalance} LINK`}</p>
 	const activeLotteries = props.lotteries.filter((lottery) => lottery.open === true);
 	const lotteryDivs = activeLotteries.map((data) => {
 		return (
@@ -115,8 +117,6 @@ function LotteryGrid(props: {lotteries: Array<LotteryData>}){
 			<p>{`Creator: ${data.creator}`}</p>
 			<p>{`Players: ${data.playerCount}/${data.maxPlayers}`}</p>
 			<p>{`Fee: ${data.entryFee} Wei`}</p>
-			// <p>{`ETH Balance: ${data.ethBalance} Wei`}</p>
-			// <p>{`Link Balance: ${data.linkBalance} LINK`}</p>
 			<button onClick={() => EnterLottery(data.contract, data.entryFee)}>Enter lottery</button>
 			<button onClick={() => CloseLottery(data.contract)}>Close lottery</button>
 			</div>
