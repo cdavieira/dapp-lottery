@@ -4,11 +4,10 @@ which can be then entered by other people.
 
 Each lottery can only be closed by its own creator.
 
-Once closed, a lucky bastard will be chosen (among the participants for that
-lottery) and will take the prize
+Once closed, one of the participants for that lottery will be chosen and will
+take the prize (in ETH)
 
 The randomness is ensured by Chainlink!
-
 
 ## how to run locally
 For linux:

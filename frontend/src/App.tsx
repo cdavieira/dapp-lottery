@@ -5,7 +5,14 @@ import factoryABI from './LotteryFactory.json';
 import lotteryABI from './Lottery.json';
 import './App.css'
 
-const factoryAddr = '0x41604169696E57E7351CEDa7977A4Bb9A6C80FA2';
+//has 30 or more contracts already created
+// const factoryAddr = '0x41604169696E57E7351CEDa7977A4Bb9A6C80FA2';
+//has 10 or more
+const factoryAddr = '0x9682f31657b76f05C4074482dC9e8dcDfeF985E6';
+//has 0
+// const factoryAddr = '0xc33396660b0836a4969Cc8A4c38eC51062abdd48';
+//has 0
+// const factoryAddr = '0x294819850846e406B4370F52B09cb0e664D4E625';
 
 function TextInput(props: {
 	id: string,
